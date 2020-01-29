@@ -6,12 +6,13 @@ class SameSite {
 
     protected $userAgent = null;
 
-    public function __construct($userAgent) {
-        $this->userAgent = $userAgent;
+    public function __construct($userAgent=null) {
+        if($userAgent != null)
+            $this->userAgent = $userAgent;
     }
 
     
-    public static function handle(string $userAgent = null) : bool {
+    public static function handle($userAgent = null) : bool {
         return (new self($userAgent))->shouldSendSameSiteNone();
     }
 
@@ -104,5 +105,10 @@ class SameSite {
         if ($minor_version != $minor)
             return $minor_version > $minor;
         return $build_version >= $build;
+    }
+
+
+    public function setUserAgent($useragent) {
+        $this->userAgent = $useragent;
     }
 }
