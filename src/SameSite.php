@@ -4,111 +4,111 @@ namespace Skorp\Dissua;
 
 class SameSite {
 
-    protected $userAgent = null;
+  protected $userAgent = null;
 
-    public function __construct($userAgent=null) {
-        if($userAgent != null)
-            $this->userAgent = $userAgent;
-    }
-
-    
-    public static function handle($userAgent = null) : bool {
-        return (new self($userAgent))->shouldSendSameSiteNone();
-    }
+  public function __construct($userAgent = null) {
+    if ($userAgent != null)
+      $this->userAgent = $userAgent;
+  }
 
 
-    public function shouldSendSameSiteNone() : bool {
-        return !$this->isSameSiteNoneIncompatible();
-    }
+  public static function handle($userAgent = null): bool {
+    return (new self($userAgent))->shouldSendSameSiteNone();
+  }
 
 
-    protected function isSameSiteNoneIncompatible() : bool {
-        return $this->hasWebKitSameSiteBug() || $this->dropsUnrecognizedSameSiteCookies();
-    }
+  public function shouldSendSameSiteNone(): bool {
+    return !$this->isSameSiteNoneIncompatible();
+  }
 
 
-    protected function hasWebKitSameSiteBug() : bool {
-        return $this->isIosVersion(12) ||
-           ($this->isMacosxVersion(10, 14) &&
-            ($this->isSafari() || $this->isMacEmbeddedBrowser()));
-    }
+  protected function isSameSiteNoneIncompatible(): bool {
+    return $this->hasWebKitSameSiteBug() || $this->dropsUnrecognizedSameSiteCookies();
+  }
 
 
-    protected function dropsUnrecognizedSameSiteCookies() : bool {
-        if ($this->isUcBrowser())
-            return !$this->isUcBrowserVersionAtLeast(12, 13, 2);
-
-        return  $this->isChromiumBased() &&
-                $this->isChromiumVersionAtLeast(51) &&
-                !$this->isChromiumVersionAtLeast(67);
-    }
+  protected function hasWebKitSameSiteBug(): bool {
+    return $this->isIosVersion(12) ||
+      ($this->isMacosxVersion(10, 14) &&
+        ($this->isSafari() || $this->isMacEmbeddedBrowser()));
+  }
 
 
-    protected function isChromiumBased() : bool  {
-        $regex = '/Chrom(e|ium)/';
-        return preg_match($regex,$this->userAgent);
-    }
+  protected function dropsUnrecognizedSameSiteCookies(): bool {
+    if ($this->isUcBrowser())
+      return !$this->isUcBrowserVersionAtLeast(12, 13, 2);
+
+    return $this->isChromiumBased() &&
+      $this->isChromiumVersionAtLeast(51) &&
+      !$this->isChromiumVersionAtLeast(67);
+  }
 
 
-    protected function isChromiumVersionAtLeast($version)  : bool {
-        $regex = '/Chrom[^ \/]+\/(\d+)[\.\d]*/';
-        preg_match($regex,$this->userAgent,$matches);
-        return ($matches[1]??null) >= $version;
-    }
+  protected function isChromiumBased(): bool {
+    $regex = '/Chrom(e|ium)/';
+    return preg_match($regex, (string) $this->userAgent);
+  }
 
 
-    protected function isIosVersion($major) : bool {
-        $regex = "/\(iP.+; CPU .*OS (\d+)[_\d]*.*\) AppleWebKit\//";
-        preg_match($regex,$this->userAgent,$matches);
-        return ($matches[1]??null) == $major;
-    }
+  protected function isChromiumVersionAtLeast($version): bool {
+    $regex = '/Chrom[^ \/]+\/(\d+)[\.\d]*/';
+    preg_match($regex, (string) $this->userAgent, $matches);
+    return ($matches[1] ?? null) >= $version;
+  }
 
 
-    protected function isMacosxVersion($major,$minor) : bool {
-        $regex = "/\(Macintosh;.*Mac OS X (\d+)_(\d+)[_\d]*.*\) AppleWebKit\//";
-        preg_match($regex,$this->userAgent,$matches);
-
-        return (($matches[1]??null) == $major   && (($matches[2]??null) == $minor));
-    }
-
-
-    protected function isSafari() : bool {
-        $regex = "/Version\/.* Safari\//";
-        return preg_match($regex,$this->userAgent) && ! $this->isChromiumBased();
-    }
+  protected function isIosVersion($major): bool {
+    $regex = "/\(iP.+; CPU .*OS (\d+)[_\d]*.*\) AppleWebKit\//";
+    preg_match($regex, (string) $this->userAgent, $matches);
+    return ($matches[1] ?? null) == $major;
+  }
 
 
-    protected function isMacEmbeddedBrowser() : bool {
-        $regex = "#/^Mozilla\/[\.\d]+ \(Macintosh;.*Mac OS X [_\d]+\) AppleWebKit\/[\.\d]+ \(KHTML, like Gecko\)$#";
-        return preg_match($regex,$this->userAgent);
-    }
+  protected function isMacosxVersion($major, $minor): bool {
+    $regex = "/\(Macintosh;.*Mac OS X (\d+)_(\d+)[_\d]*.*\) AppleWebKit\//";
+    preg_match($regex, (string) $this->userAgent, $matches);
+
+    return (($matches[1] ?? null) == $major && (($matches[2] ?? null) == $minor));
+  }
 
 
-    protected function isUcBrowser()  : bool {
-        $regex = '/UCBrowser\//';
-        return preg_match($regex,$this->userAgent);
-    }
+  protected function isSafari(): bool {
+    $regex = "/Version\/.* Safari\//";
+    return preg_match($regex, (string) $this->userAgent) && !$this->isChromiumBased();
+  }
 
 
-    protected function isUcBrowserVersionAtLeast($major,$minor,$build) : bool {
-
-        $regex = "/UCBrowser\/(\d+)\.(\d+)\.(\d+)[\.\d]* /";
-
-        preg_match($regex,$this->userAgent,$matches);
-
-        $major_version = $matches[1] ?? null;
-        $minor_version = $matches[2] ?? null;
-        $build_version = $matches[3] ?? null;
-
-        if ($major_version != $major)
-            return $major_version > $major;
-        if ($minor_version != $minor)
-            return $minor_version > $minor;
-        return $build_version >= $build;
-    }
+  protected function isMacEmbeddedBrowser(): bool {
+    $regex = "#/^Mozilla\/[\.\d]+ \(Macintosh;.*Mac OS X [_\d]+\) AppleWebKit\/[\.\d]+ \(KHTML, like Gecko\)$#";
+    return preg_match($regex, (string) $this->userAgent);
+  }
 
 
-    public function setUserAgent($useragent) {
-        $this->userAgent = $useragent;
-    }
+  protected function isUcBrowser(): bool {
+    $regex = '/UCBrowser\//';
+    return preg_match($regex, (string) $this->userAgent);
+  }
+
+
+  protected function isUcBrowserVersionAtLeast($major, $minor, $build): bool {
+
+    $regex = "/UCBrowser\/(\d+)\.(\d+)\.(\d+)[\.\d]* /";
+
+    preg_match($regex, (string) $this->userAgent, $matches);
+
+    $major_version = $matches[1] ?? null;
+    $minor_version = $matches[2] ?? null;
+    $build_version = $matches[3] ?? null;
+
+    if ($major_version != $major)
+      return $major_version > $major;
+    if ($minor_version != $minor)
+      return $minor_version > $minor;
+    return $build_version >= $build;
+  }
+
+
+  public function setUserAgent($useragent) {
+    $this->userAgent = $useragent;
+  }
 }
